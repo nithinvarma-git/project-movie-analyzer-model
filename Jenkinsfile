@@ -2,12 +2,12 @@
 
 pipeline {
     environment {
-        ecrRegistry = "070797855002.dkr.ecr.ap-south-1.amazonaws.com"
+        ecrRegistry = "768649629888.dkr.ecr.eu-north-1.amazonaws.com"
         imageName = "${ecrRegistry}/model"
         branchName = sh(script: 'echo $BRANCH_NAME | sed "s#/#-#"', returnStdout: true).trim()
         gitCommit = "${GIT_COMMIT[0..6]}"
         dockerTag = "${branchName}-${gitCommit}-${env.BUILD_NUMBER}"
-        gitRepoURL = "https://github.com/artisantek/project-movie-analyzer-model.git"
+        gitRepoURL = "https://github.com/nithinvarma-git/project-movie-analyzer-model.git"
     }
     agent {
         label 'agent'
@@ -27,7 +27,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                dockerECRImagePush('$imageName', '$dockerTag', 'ap-south-1')
+                dockerECRImagePush('$imageName', '$dockerTag', 'model', 'awsCred', 'eu-north-1')
             }
         }
 
@@ -44,7 +44,7 @@ pipeline {
 
         stage('Kubernetes Deploy - DEV') {
             when { branch 'dev' }
-            steps { kubernetesEKSHelmDeploy('movie-analyzer-model', 'dev') }
+            steps { kubernetesEKSHelmDeploy('$imageName', '$dockerTag', 'movie-analyzer-model', 'awsCred', 'eu-north-1', 'movie-eks', 'dev') }
         }
 
 
